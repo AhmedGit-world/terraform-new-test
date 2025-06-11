@@ -1,9 +1,9 @@
 // Jenkinsfile
 pipeline {
     // Explicitly run this pipeline on the Jenkins master controller.
-    agent {
-        label 'master'
-    }
+    agent any
+    
+    
 
     // Environment variables for the pipeline.
     // TF_VAR_bucket_name will be automatically picked up by Terraform as a variable.
