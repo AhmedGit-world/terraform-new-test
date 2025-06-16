@@ -1,10 +1,6 @@
-resource "random_pet" "mypet" {
-prefix = "MR"
-separator = "."
-length = "1"
-}
-
-output my_pet {
-  value = random_pet.mypet.id
-  description = "India"
+resource "aws_iam_user" "admin_user" {
+  name = "Ahmed"
+  tags = {
+    description = "Technical Team Lead"
+  }
 }
