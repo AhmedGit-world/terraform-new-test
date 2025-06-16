@@ -7,6 +7,7 @@ pipeline {
 
     environment {
         TF_VAR_bucket_name = "jenkins-tf-newtest-${UUID.randomUUID().toString().substring(0, 8).toLowerCase()}"
+         TF_VAR_aws_region = 'us-east-1'
     }
 
     stages {
