@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         TF_VAR_bucket_name = "jenkins-tf-newtest-${UUID.randomUUID().toString().substring(0, 8).toLowerCase()}"
-         TF_VAR_aws_region = 'us-east-1'
+        TF_VAR_aws_region = 'us-east-1'
     }
 
     stages {
@@ -47,10 +47,9 @@ pipeline {
             }
         }
 
-        stage('Terraform Apply - Manual Approval') {
+        stage('Terraform Apply') {
             steps {
-                echo '4. Waiting for manual approval to apply Terraform changes...'
-                input message: 'Review the plan and click "Apply Now" to proceed with infrastructure creation.', ok: 'Apply Now'
+                echo '4. Automatically applying Terraform changes...'
                 script {
                     withAWS(credentials: 'aws-terraform-credentials') {
                         sh 'terraform apply -auto-approve tfplan'
