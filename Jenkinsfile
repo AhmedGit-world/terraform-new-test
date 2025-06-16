@@ -1,14 +1,11 @@
-// Jenkinsfile
 pipeline {
-    // Explicitly run this pipeline on the Jenkins master controller.
     agent any
-    
-    
 
-    // Environment variables for the pipeline.
-    // TF_VAR_bucket_name will be automatically picked up by Terraform as a variable.
+    tools {
+        terraform 'Terraform_Manual_Install' // Name must match Jenkins tool config
+    }
+
     environment {
-        // Generate a unique bucket name for each run using a short UUID
         TF_VAR_bucket_name = "jenkins-tf-newtest-${UUID.randomUUID().toString().substring(0, 8).toLowerCase()}"
     }
 
@@ -26,8 +23,6 @@ pipeline {
             steps {
                 echo '2. Initializing Terraform backend and providers...'
                 script {
-                    // Use 'withAWS' to securely inject AWS credentials as environment variables
-                    // 'aws-terraform-credentials' is the ID you configured in Jenkins
                     withAWS(credentials: 'aws-terraform-credentials') {
                         sh 'terraform init'
                     }
@@ -40,12 +35,10 @@ pipeline {
                 echo '3. Generating Terraform execution plan...'
                 script {
                     withAWS(credentials: 'aws-terraform-credentials') {
-                        // -out=tfplan saves the plan to a binary file for consistent application
                         sh 'terraform plan -out=tfplan'
                     }
                 }
             }
-            // Optional: Archive the plan file for review in Jenkins build artifacts
             post {
                 always {
                     archiveArtifacts artifacts: 'tfplan', fingerprint: true
@@ -56,12 +49,9 @@ pipeline {
         stage('Terraform Apply - Manual Approval') {
             steps {
                 echo '4. Waiting for manual approval to apply Terraform changes...'
-                // This input step pauses the pipeline until a user approves.
-                // Highly recommended for infrastructure changes!
                 input message: 'Review the plan and click "Apply Now" to proceed with infrastructure creation.', ok: 'Apply Now'
                 script {
                     withAWS(credentials: 'aws-terraform-credentials') {
-                        // -auto-approve is used because we have a manual approval gate before this.
                         sh 'terraform apply -auto-approve tfplan'
                     }
                 }
@@ -69,10 +59,6 @@ pipeline {
             }
         }
 
-        // Optional Stage: Terraform Destroy
-        // This stage is commented out by default for safety.
-        // Uncomment it in your Jenkinsfile, commit, push, and run the pipeline
-        // when you explicitly want to destroy the created resources.
         /*
         stage('Terraform Destroy - Manual Confirmation') {
             steps {
@@ -89,7 +75,6 @@ pipeline {
         */
     }
 
-    // Post-build actions: run after all stages complete (success or failure)
     post {
         success {
             echo 'Pipeline completed successfully! Check AWS console for resources.'
